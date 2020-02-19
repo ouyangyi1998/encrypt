@@ -25,7 +25,7 @@ public interface UploadFileService {
      * @param multipartFile 文件
      * @return
      */
-    Map<String, Object> realUpload(FileForm form, MultipartFile multipartFile) throws IOException, Exception;
+    Map<String, Object> realUpload(FileForm form, MultipartFile multipartFile) throws Exception;
 
-
+    Map<String,Object>check(FileForm form)throws Exception;
 }

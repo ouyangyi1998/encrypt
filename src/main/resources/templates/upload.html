@@ -1,12 +1,37 @@
-<html>
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <title>HTML5大文件分片上传示例</title>
     <script src="http://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
-    <script src="../static/js/md5.js"></script>
+    <script th:src="@{/js/aes.js}"></script>
+    <script th:src="@{/js/pad-zeropadding.js}"></script>
+    <script th:src="@{/js/md5.js}"></script>
     <script type="text/javascript">
+
+        function Encrypt(word,randomKey){
+            var key = CryptoJS.enc.Utf8.parse(randomKey);
+            var srcs = CryptoJS.enc.Utf8.parse(word);
+            var encrypted = CryptoJS.AES.encrypt(srcs, key, {
+                mode : CryptoJS.mode.ECB,
+                padding : CryptoJS.pad.Pkcs7
+            });
+            return encrypted.toString();
+        }
+        function randomString(len) {
+            　　len = len || 32;
+            　　var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';    /****默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
+            　　var maxPos = $chars.length;
+            　　var pwd = '';
+             　　for (i = 0; i < len; i++) {
+                　　　　pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+                 　　}
+             　　return pwd;
+             }
+
+
         var i = -1;
-        var shardSize = 1 * 1024 * 1024;    //以1MB为一个分片
+        var shardSize =  128 * 1024;    //以1MB为一个分片
         var succeed = 0;
         var dataBegin;  //开始时间
         var dataEnd;    //结束时间
@@ -60,9 +85,11 @@
         };
         
         function realUpload(file, uuid, md5, date) {
-            name = file.name;
-            size = file.size;
+          var name = file.name;
+          var  size = file.size;
             var shardCount = Math.ceil(size / shardSize);  //总片数
+            console.log(shardCount);
+            console.log(i);
             if (i > shardCount) {
                 return;
             } else {
@@ -79,10 +106,25 @@
                 form.append("action", "check");  //检测分片是否上传
                 $("#param").append("<br/>" + "action==check " + "&nbsp;&nbsp;");
             } else {
-                form.append("action", "upload");  //直接上传分片
-                form.append("data", file.slice(start, end));  //slice方法用于切出文件的一部分
-                $("#param").append("<br/>" + "action==upload ");
+
+                var key=randomString(16);
+                console.log(typeof  key);
+                var temp=file.slice(start,end);
+
+                var reader = new FileReader();
+                reader.readAsText(temp, 'utf-8');
+                reader.onload = function(event) {
+                    var content = reader.result;//内容就在这里
+
+
+                    var encrypt = Encrypt(content, key);
+                    form.append("fileEncrypt", encrypt);
+                    form.append("key", key);
+                    form.append("action", "upload");  //直接上传分片
+                    $("#param").append("<br/>" + "action==upload ");
+                };
             }
+
             form.append("uuid", uuid);
             form.append("md5", md5);
             form.append("date", date);

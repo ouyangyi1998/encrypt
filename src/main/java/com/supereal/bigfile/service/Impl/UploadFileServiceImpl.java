@@ -11,7 +11,6 @@ import com.supereal.bigfile.utils.NameUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -69,22 +68,16 @@ public class UploadFileServiceImpl implements UploadFileService {
         return map;
     }
 
-
     @Override
-    public Map<String, Object> realUpload(FileForm form, MultipartFile multipartFile) throws Exception {
+    public Map<String, Object> check(FileForm form) throws Exception {
         String action = form.getAction();
         String fileId = form.getUuid();
         Integer index = Integer.valueOf(form.getIndex());
         String partMd5 = form.getPartMd5();
-        String md5 = form.getMd5();
         Integer total = Integer.valueOf(form.getTotal());
-        String fileName = form.getName();
-        String size = form.getSize();
-        String suffix = NameUtil.getExtensionName(fileName);
 
         String saveDirectory = Constant.PATH + File.separator + fileId;
-        String filePath = saveDirectory + File.separator + fileId + "." + suffix;
-        //验证路径是否存在，不存在则创建目录
+
         File path = new File(saveDirectory);
         if (!path.exists()) {
             path.mkdirs();
@@ -114,7 +107,35 @@ public class UploadFileServiceImpl implements UploadFileService {
                 map.put("fileId", fileId);
                 return map;
             }
-        } else if("upload".equals(action)) {
+        }
+        return map;
+    }
+
+    @Override
+    public Map<String, Object> realUpload(FileForm form, MultipartFile multipartFile) throws Exception {
+        String action = form.getAction();
+        String fileId = form.getUuid();
+        Integer index = Integer.valueOf(form.getIndex());
+        String md5 = form.getMd5();
+        Integer total = Integer.valueOf(form.getTotal());
+        String fileName = form.getName();
+        String size = form.getSize();
+        String suffix = NameUtil.getExtensionName(fileName);
+
+        String saveDirectory = Constant.PATH + File.separator + fileId;
+        String filePath = saveDirectory + File.separator + fileId + "." + suffix;
+        //验证路径是否存在，不存在则创建目录
+        File path = new File(saveDirectory);
+        if (!path.exists()) {
+            path.mkdirs();
+        }
+        //文件分片位置
+        File file = new File(saveDirectory, fileId + "_" + index);
+
+        //根据action不同执行不同操作. check:校验分片是否上传过; upload:直接上传分片
+        Map<String, Object> map = null;
+
+         if("upload".equals(action)) {
             //分片上传过程中出错,有残余时需删除分块后,重新上传
             if (file.exists()) {
                 file.delete();
@@ -133,18 +154,19 @@ public class UploadFileServiceImpl implements UploadFileService {
                 if (fileArray.length == total) {
                     //分块全部上传完毕,合并
 
-                    File newFile = new File(saveDirectory, fileId + "." + suffix);
+                    File newFile = new File(saveDirectory, fileName);
                     FileOutputStream outputStream = new FileOutputStream(newFile, true);//文件追加写入
                     byte[] byt = new byte[10 * 1024 * 1024];
                     int len;
                     FileInputStream temp = null;//分片文件
                     for (int i = 0; i < total; i++) {
                         int j = i + 1;
-                        temp = new FileInputStream(new File(saveDirectory, fileId + "_" + j));
+                        temp = new FileInputStream(new File(saveDirectory,fileId+"_"+j));
                         while ((len = temp.read(byt)) != -1) {
                             outputStream.write(byt, 0, len);
                         }
                     }
+
                     //关闭流
                     temp.close();
                     outputStream.close();
@@ -164,6 +186,18 @@ public class UploadFileServiceImpl implements UploadFileService {
                     map.put("fileId", fileId);
                     map.put("flag", "2");
 
+                   /* System.gc();
+
+                    for (int i=0;i<index;i++)
+                    {
+                        File dir=new File(Constant.PATH+"/"+fileId);
+                        File[] files=dir.listFiles();
+                        String filename=files[i].getName();
+                         if (filename.startsWith(fileId))
+                        {
+                            System.out.println(files[i].delete());
+                         }
+                    }*/
                     return map;
                 } else if(index == 1) {
                     //文件第一个分片上传时记录到数据库
