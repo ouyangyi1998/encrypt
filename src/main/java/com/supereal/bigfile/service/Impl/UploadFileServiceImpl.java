@@ -25,15 +25,62 @@ import java.util.Map;
 @Service
 public class UploadFileServiceImpl implements UploadFileService {
 
+
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
 
     @Autowired
     UploadFileRepository uploadFileRepository;
 
     @Override
+    public Map<String, Object> check(FileForm form) throws Exception {
+        String action = form.getAction();
+        String fileId = form.getUuid();
+        Integer index = Integer.valueOf(form.getIndex());
+        String partMd5 = form.getPartMd5();
+        String md5 = form.getMd5();
+        Integer total = Integer.valueOf(form.getTotal());
+        String fileName = form.getName();
+        String size = form.getSize();
+        String suffix = NameUtil.getExtensionName(fileName);
+
+        String saveDirectory = Constant.PATH + File.separator + fileId;
+        String filePath = saveDirectory + File.separator + fileId + "." + suffix;
+        //验证路径是否存在，不存在则创建目录
+        File path = new File(saveDirectory);
+        if (!path.exists()) {
+            path.mkdirs();
+        }
+        //文件分片位置
+        File file = new File(saveDirectory, fileId + "_" + index);
+
+        //根据action不同执行不同操作. check:校验分片是否上传过; upload:直接上传分片
+        Map<String, Object> map = null;
+
+            String md5Str = FileMd5Util.getFileMD5(file);
+            if (md5Str != null && md5Str.length() == 31) {
+                System.out.println("check length =" + partMd5.length() + " md5Str length" + md5Str.length() + "   " + partMd5 + " " + md5Str);
+                md5Str = "0" + md5Str;
+            }
+            if (md5Str != null && md5Str.equals(partMd5)) {
+                //分片已上传过
+                map = new HashMap<>();
+                map.put("flag", "1");
+                map.put("fileId", fileId);
+                if (index != total)
+                    return map;
+            } else {
+                //分片未上传
+                map = new HashMap<>();
+                map.put("flag", "0");
+                map.put("fileId", fileId);
+                return map;
+            }
+        return map;
+    }
+
+    @Override
     public Map<String, Object> findByFileMd5(String md5) {
         UploadFile uploadFile = uploadFileRepository.findByFileMd5(md5);
-
         Map<String, Object> map = null;
         if (uploadFile == null) {
             //没有上传过文件
@@ -43,9 +90,9 @@ public class UploadFileServiceImpl implements UploadFileService {
             map.put("date", simpleDateFormat.format(new Date()));
         } else {
             //上传过文件，判断文件现在还存在不存在
-            File file = new File(uploadFile.getFilePath());
-
+            File file = new File(Constant.PATH+"/"+uploadFile.getFileId()+"/"+uploadFile.getFileName());
             if (file.exists()) {
+                System.out.println(uploadFile.getFileStatus());
                 if (uploadFile.getFileStatus() == 1) {
                     //文件只上传了一部分
                     map = new HashMap<>();
@@ -55,7 +102,7 @@ public class UploadFileServiceImpl implements UploadFileService {
                 } else if (uploadFile.getFileStatus() == 2) {
                     //文件早已上传完整
                     map = new HashMap<>();
-                    map.put("flag" , 2);
+                    map.put("flag", 2);
                 }
             } else {
 
@@ -68,48 +115,6 @@ public class UploadFileServiceImpl implements UploadFileService {
         return map;
     }
 
-    @Override
-    public Map<String, Object> check(FileForm form) throws Exception {
-        String action = form.getAction();
-        String fileId = form.getUuid();
-        Integer index = Integer.valueOf(form.getIndex());
-        String partMd5 = form.getPartMd5();
-        Integer total = Integer.valueOf(form.getTotal());
-
-        String saveDirectory = Constant.PATH + File.separator + fileId;
-
-        File path = new File(saveDirectory);
-        if (!path.exists()) {
-            path.mkdirs();
-        }
-        //文件分片位置
-        File file = new File(saveDirectory, fileId + "_" + index);
-
-        //根据action不同执行不同操作. check:校验分片是否上传过; upload:直接上传分片
-        Map<String, Object> map = null;
-        if ("check".equals(action)) {
-            String md5Str = FileMd5Util.getFileMD5(file);
-            if (md5Str != null && md5Str.length() == 31) {
-                System.out.println("check length =" + partMd5.length() + " md5Str length" + md5Str.length() + "   " + partMd5 + " " + md5Str);
-                md5Str = "0" + md5Str;
-            }
-            if (md5Str != null && md5Str.equals(partMd5)) {
-                //分片已上传过
-                map = new HashMap<>();
-                map.put("flag", "1");
-                map.put("fileId", fileId);
-                if(index != total)
-                    return map;
-            } else {
-                //分片未上传
-                map = new HashMap<>();
-                map.put("flag", "0");
-                map.put("fileId", fileId);
-                return map;
-            }
-        }
-        return map;
-    }
 
     @Override
     public Map<String, Object> realUpload(FileForm form, MultipartFile multipartFile) throws Exception {
@@ -134,8 +139,7 @@ public class UploadFileServiceImpl implements UploadFileService {
 
         //根据action不同执行不同操作. check:校验分片是否上传过; upload:直接上传分片
         Map<String, Object> map = null;
-
-         if("upload".equals(action)) {
+         if ("upload".equals(action)) {
             //分片上传过程中出错,有残余时需删除分块后,重新上传
             if (file.exists()) {
                 file.delete();
@@ -144,7 +148,7 @@ public class UploadFileServiceImpl implements UploadFileService {
             map = new HashMap<>();
             map.put("flag", "1");
             map.put("fileId", fileId);
-            if(index != total)
+            if (index != total)
                 return map;
         }
 
@@ -161,12 +165,11 @@ public class UploadFileServiceImpl implements UploadFileService {
                     FileInputStream temp = null;//分片文件
                     for (int i = 0; i < total; i++) {
                         int j = i + 1;
-                        temp = new FileInputStream(new File(saveDirectory,fileId+"_"+j));
+                        temp = new FileInputStream(new File(saveDirectory, fileId + "_" + j));
                         while ((len = temp.read(byt)) != -1) {
                             outputStream.write(byt, 0, len);
                         }
                     }
-
                     //关闭流
                     temp.close();
                     outputStream.close();
@@ -181,25 +184,21 @@ public class UploadFileServiceImpl implements UploadFileService {
                     uploadFile.setFileSize(size);
 
                     uploadFileRepository.save(uploadFile);
-
-                    map=new HashMap<>();
+                /*    System.gc();
+                    for (int i=0;i<index;i++) {
+                        File dir = new File(Constant.PATH + "/" + fileId);
+                        File[] files = dir.listFiles();
+                        String filename = files[i].getName();
+                        if (filename.startsWith(fileId)) {
+                            System.out.println(files[i].delete());
+                        }
+                    }*/
+                    map = new HashMap<>();
                     map.put("fileId", fileId);
                     map.put("flag", "2");
 
-                   /* System.gc();
-
-                    for (int i=0;i<index;i++)
-                    {
-                        File dir=new File(Constant.PATH+"/"+fileId);
-                        File[] files=dir.listFiles();
-                        String filename=files[i].getName();
-                         if (filename.startsWith(fileId))
-                        {
-                            System.out.println(files[i].delete());
-                         }
-                    }*/
                     return map;
-                } else if(index == 1) {
+                } else if (index == 1) {
                     //文件第一个分片上传时记录到数据库
                     UploadFile uploadFile = new UploadFile();
                     uploadFile.setFileMd5(md5);

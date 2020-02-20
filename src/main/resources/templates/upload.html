@@ -18,16 +18,28 @@
             });
             return encrypted.toString();
         }
-        function randomString(len) {
-            　　len = len || 32;
-            　　var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';    /****默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
-            　　var maxPos = $chars.length;
-            　　var pwd = '';
-             　　for (i = 0; i < len; i++) {
-                　　　　pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
-                 　　}
-             　　return pwd;
-             }
+        function dataURItoBlob(base64Data) {
+            //console.log(base64Data);//data:image/png;base64,
+            var byteString;
+            if(base64Data.split(',')[0].indexOf('base64') >= 0)
+                byteString = atob(base64Data.split(',')[1]);//base64 解码
+            else{
+                byteString = unescape(base64Data.split(',')[1]);
+            }
+            var mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];//mime类型 -- image/png
+
+            // var arrayBuffer = new ArrayBuffer(byteString.length); //创建缓冲数组
+            // var ia = new Uint8Array(arrayBuffer);//创建视图
+            var ia = new Uint8Array(byteString.length);//创建视图
+            for(var i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            var blob = new Blob([ia], {
+                type: mimeString
+            });
+            return blob;
+        }
+
 
 
         var i = -1;
@@ -107,7 +119,7 @@
                 $("#param").append("<br/>" + "action==check " + "&nbsp;&nbsp;");
             } else {
 
-                var key=randomString(16);
+                var key="1234567812345678";
                 console.log(typeof  key);
                 var temp=file.slice(start,end);
 
@@ -118,6 +130,7 @@
 
 
                     var encrypt = Encrypt(content, key);
+                    console.log(typeof encrypt);
                     form.append("fileEncrypt", encrypt);
                     form.append("key", key);
                     form.append("action", "upload");  //直接上传分片

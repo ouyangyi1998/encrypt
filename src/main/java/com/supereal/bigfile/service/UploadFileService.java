@@ -27,5 +27,12 @@ public interface UploadFileService {
      */
     Map<String, Object> realUpload(FileForm form, MultipartFile multipartFile) throws Exception;
 
+    /**
+     * 确实文件是否存在
+     * @param form
+     * @return 文件表单信息
+     * @throws Exception
+     */
     Map<String,Object>check(FileForm form)throws Exception;
+
 }
