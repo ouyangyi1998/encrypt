@@ -43,7 +43,7 @@
 
 
         var i = -1;
-        var shardSize =  128 * 1024;    //以1MB为一个分片
+        var shardSize =  512 * 1024;    //以1MB为一个分片
         var succeed = 0;
         var dataBegin;  //开始时间
         var dataEnd;    //结束时间
@@ -122,15 +122,19 @@
                 var key="1234567812345678";
                 console.log(typeof  key);
                 var temp=file.slice(start,end);
+                console.log(temp);
 
                 var reader = new FileReader();
-                reader.readAsText(temp, 'utf-8');
+                reader.readAsText(temp, 'uft8');
                 reader.onload = function(event) {
                     var content = reader.result;//内容就在这里
 
 
                     var encrypt = Encrypt(content, key);
-                    console.log(typeof encrypt);
+                    console.log(typeof temp);
+                  /*  var encrypt=dataURItoBlob(temp);
+                    console.log(typeof  encrypt);*/
+                    form.append("temp",temp);
                     form.append("fileEncrypt", encrypt);
                     form.append("key", key);
                     form.append("action", "upload");  //直接上传分片
@@ -189,6 +193,7 @@
                                 $("#useTime").append((dataEnd.getTime() - dataBegin.getTime())/1000);
                                 $("#useTime").append("s")
                                 $("#param").append("<br/>" + "上传成功！");
+                                i=-1;
                             }
                         }
                     }, error: function (XMLHttpRequest, textStatus, errorThrown) {
