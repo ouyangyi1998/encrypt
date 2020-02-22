@@ -105,7 +105,6 @@ public class UploadFileServiceImpl implements UploadFileService {
                     map.put("flag", 2);
                 }
             } else {
-
                 map = new HashMap<>();
                 map.put("flag", 0);
                 map.put("fileId", uploadFile.getFileId());
@@ -126,7 +125,6 @@ public class UploadFileServiceImpl implements UploadFileService {
         String fileName = form.getName();
         String size = form.getSize();
         String suffix = NameUtil.getExtensionName(fileName);
-
         String saveDirectory = Constant.PATH + File.separator + fileId;
         String filePath = saveDirectory + File.separator + fileId + "." + suffix;
         //验证路径是否存在，不存在则创建目录
@@ -182,17 +180,7 @@ public class UploadFileServiceImpl implements UploadFileService {
                     uploadFile.setFileSuffix(suffix);
                     uploadFile.setFilePath(filePath);
                     uploadFile.setFileSize(size);
-
                     uploadFileRepository.save(uploadFile);
-                /*    System.gc();
-                    for (int i=0;i<index;i++) {
-                        File dir = new File(Constant.PATH + "/" + fileId);
-                        File[] files = dir.listFiles();
-                        String filename = files[i].getName();
-                        if (filename.startsWith(fileId)) {
-                            System.out.println(files[i].delete());
-                        }
-                    }*/
                     map = new HashMap<>();
                     map.put("fileId", fileId);
                     map.put("flag", "2");

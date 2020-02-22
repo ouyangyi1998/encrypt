@@ -7,7 +7,12 @@
     <script th:src="@{/js/aes.js}"></script>
     <script th:src="@{/js/pad-zeropadding.js}"></script>
     <script th:src="@{/js/md5.js}"></script>
+    <script th:src="@{/js/Base64.js}"></script>
     <script type="text/javascript">
+
+        function buf2hex(buffer) { // buffer is an ArrayBuffer
+            return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+        }
 
         function Encrypt(word,randomKey){
             var key = CryptoJS.enc.Utf8.parse(randomKey);
@@ -16,34 +21,31 @@
                 mode : CryptoJS.mode.ECB,
                 padding : CryptoJS.pad.Pkcs7
             });
-            return encrypted.toString();
+            var reg = new RegExp('/', "g");
+
+            return encrypted.toString().replace(reg, "#");
+          /* return encrypted.toString();*/
         }
-        function dataURItoBlob(base64Data) {
-            //console.log(base64Data);//data:image/png;base64,
-            var byteString;
-            if(base64Data.split(',')[0].indexOf('base64') >= 0)
-                byteString = atob(base64Data.split(',')[1]);//base64 解码
-            else{
-                byteString = unescape(base64Data.split(',')[1]);
-            }
-            var mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];//mime类型 -- image/png
-
-            // var arrayBuffer = new ArrayBuffer(byteString.length); //创建缓冲数组
-            // var ia = new Uint8Array(arrayBuffer);//创建视图
-            var ia = new Uint8Array(byteString.length);//创建视图
-            for(var i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-            }
-            var blob = new Blob([ia], {
-                type: mimeString
-            });
-            return blob;
+        function randomString(len) {
+             　　len = len || 32;
+             　　var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';    /****默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
+             　　var maxPos = $chars.length;
+             　　var pwd = '';
+             　　for (var w= 0; w < len; w++) {
+                　　　　pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+                 　　}
+            　　return pwd;
         }
-
-
+        function encode(str){
+// 对字符串进行编码
+            var encode = encodeURI(str);
+// 对编码的字符串转化base64
+            var base64 = btoa(encode);
+            return base64;
+        }
 
         var i = -1;
-        var shardSize =  512 * 1024;    //以1MB为一个分片
+        var shardSize =  512 * 1024;    //以512KB为一个分片
         var succeed = 0;
         var dataBegin;  //开始时间
         var dataEnd;    //结束时间
@@ -100,7 +102,6 @@
           var name = file.name;
           var  size = file.size;
             var shardCount = Math.ceil(size / shardSize);  //总片数
-            console.log(shardCount);
             console.log(i);
             if (i > shardCount) {
                 return;
@@ -118,30 +119,28 @@
                 form.append("action", "check");  //检测分片是否上传
                 $("#param").append("<br/>" + "action==check " + "&nbsp;&nbsp;");
             } else {
-
-                var key="1234567812345678";
-                console.log(typeof  key);
+                var key=randomString(16);
+                console.log( key);
+                key=encode(key);
+                console.log(key);
                 var temp=file.slice(start,end);
-                console.log(temp);
 
                 var reader = new FileReader();
-                reader.readAsText(temp, 'uft8');
-                reader.onload = function(event) {
-                    var content = reader.result;//内容就在这里
+                reader.readAsArrayBuffer(temp);
+                //reader.readAsArrayBuffer(temp);
+                reader.onload = function(e) {
+                    var buffer = e.target.result;//内容就在这里
+
+                    var hex = buf2hex(buffer)
+                    var encrypt = Encrypt(hex, key);
 
 
-                    var encrypt = Encrypt(content, key);
-                    console.log(typeof temp);
-                  /*  var encrypt=dataURItoBlob(temp);
-                    console.log(typeof  encrypt);*/
-                    form.append("temp",temp);
                     form.append("fileEncrypt", encrypt);
                     form.append("key", key);
                     form.append("action", "upload");  //直接上传分片
                     $("#param").append("<br/>" + "action==upload ");
                 };
             }
-
             form.append("uuid", uuid);
             form.append("md5", md5);
             form.append("date", date);
@@ -149,7 +148,6 @@
             form.append("size", size);
             form.append("total", shardCount);  //总片数
             form.append("index", i+1);        //当前是第几片
-
             var index = i+1;
             $("#param").append("index==" + index);
             //按大小切割文件段　　
