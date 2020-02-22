@@ -24,7 +24,6 @@
             var reg = new RegExp('/', "g");
 
             return encrypted.toString().replace(reg, "#");
-          /* return encrypted.toString();*/
         }
         function randomString(len) {
              　　len = len || 32;
@@ -133,7 +132,6 @@
 
                     var hex = buf2hex(buffer)
                     var encrypt = Encrypt(hex, key);
-
 
                     form.append("fileEncrypt", encrypt);
                     form.append("key", key);

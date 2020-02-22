@@ -1,27 +1,17 @@
 package com.supereal.bigfile.controller;
 
-import com.mysql.cj.util.Base64Decoder;
-import com.sun.xml.internal.ws.util.ByteArrayBuffer;
 import com.supereal.bigfile.form.FileForm;
 import com.supereal.bigfile.service.UploadFileService;
 import com.supereal.bigfile.utils.AESUtil;
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import sun.misc.BASE64Decoder;
 
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.spec.SecretKeySpec;
 import javax.validation.Valid;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -44,9 +34,7 @@ public class UploadFileController {
     @PostMapping("/isUpload")
     @ResponseBody
     public Map<String, Object> isUpload(@Valid FileForm form) {
-
         return uploadFileService.findByFileMd5(form.getMd5());
-
     }
 
 

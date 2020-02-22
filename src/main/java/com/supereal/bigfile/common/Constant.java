@@ -1,6 +1,5 @@
 package com.supereal.bigfile.common;
 
-import java.io.File;
 
 /**
  * Create by tianci

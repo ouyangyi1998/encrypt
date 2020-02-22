@@ -25,26 +25,18 @@ import java.util.Map;
 @Service
 public class UploadFileServiceImpl implements UploadFileService {
 
+    @Autowired
+   private UploadFileRepository uploadFileRepository;
+
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
-
-    @Autowired
-    UploadFileRepository uploadFileRepository;
-
     @Override
     public Map<String, Object> check(FileForm form) throws Exception {
-        String action = form.getAction();
         String fileId = form.getUuid();
         Integer index = Integer.valueOf(form.getIndex());
         String partMd5 = form.getPartMd5();
-        String md5 = form.getMd5();
         Integer total = Integer.valueOf(form.getTotal());
-        String fileName = form.getName();
-        String size = form.getSize();
-        String suffix = NameUtil.getExtensionName(fileName);
-
         String saveDirectory = Constant.PATH + File.separator + fileId;
-        String filePath = saveDirectory + File.separator + fileId + "." + suffix;
         //验证路径是否存在，不存在则创建目录
         File path = new File(saveDirectory);
         if (!path.exists()) {
@@ -80,7 +72,8 @@ public class UploadFileServiceImpl implements UploadFileService {
 
     @Override
     public Map<String, Object> findByFileMd5(String md5) {
-        UploadFile uploadFile = uploadFileRepository.findByFileMd5(md5);
+        UploadFile uploadFile = uploadFileRepository.findFileByFileMd5(md5);
+        System.out.println(uploadFile==null);
         Map<String, Object> map = null;
         if (uploadFile == null) {
             //没有上传过文件
@@ -180,7 +173,7 @@ public class UploadFileServiceImpl implements UploadFileService {
                     uploadFile.setFileSuffix(suffix);
                     uploadFile.setFilePath(filePath);
                     uploadFile.setFileSize(size);
-                    uploadFileRepository.save(uploadFile);
+                    uploadFileRepository.saveFile(uploadFile);
                     map = new HashMap<>();
                     map.put("fileId", fileId);
                     map.put("flag", "2");
@@ -201,7 +194,7 @@ public class UploadFileServiceImpl implements UploadFileService {
                     uploadFile.setFileSize(size);
                     uploadFile.setFileStatus(1);
 
-                    uploadFileRepository.save(uploadFile);
+                    uploadFileRepository.saveFile(uploadFile);
                 }
             }
         }

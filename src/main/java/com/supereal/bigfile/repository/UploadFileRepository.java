@@ -1,15 +1,20 @@
 package com.supereal.bigfile.repository;
 
 import com.supereal.bigfile.dataobject.UploadFile;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Component;
+
 
 /**
  * Create by tianci
  * 2019/1/10 15:02
  */
-public interface UploadFileRepository extends JpaRepository<UploadFile, String> {
+@Component
+@Mapper
+public interface UploadFileRepository {
 
-    UploadFile findByFileMd5(String fileMd5);
+    UploadFile findFileByFileMd5(String fileMd5);
 
-    void deleteByFileMd5(String fileMd5);
+    void saveFile(UploadFile file);
+
 }

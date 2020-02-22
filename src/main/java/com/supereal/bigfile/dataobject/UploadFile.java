@@ -2,8 +2,6 @@ package com.supereal.bigfile.dataobject;
 
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.util.Date;
 
 /**
@@ -11,12 +9,10 @@ import java.util.Date;
  * 2019/1/10 14:38
  */
 
-@Entity
 @Data
 public class UploadFile {
 
     /* uuid */
-    @Id
     private String fileId;
 
     /* 文件路径 */

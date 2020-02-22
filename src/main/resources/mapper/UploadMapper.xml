@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.supereal.bigfile.repository.UploadFileRepository">
+    <select id="findFileByFileMd5" parameterType="java.lang.String" resultType="com.supereal.bigfile.dataobject.UploadFile">
+        SELECT file_id AS fileId, file_name AS fileName, file_md5 AS fileMd5, file_status AS fileStatus
+        FROM uploadfile.upload_file
+        WHERE upload_file.file_md5=#{fileMd5}
+    </select>
+    <insert id="saveFile" parameterType="com.supereal.bigfile.dataobject.UploadFile">
+        INSERT INTO uploadfile.upload_file(file_id, file_path, file_size, file_suffix, file_name, file_md5, file_status,create_time)
+        VALUES (#{fileId},#{filePath},#{fileSize},#{fileSuffix},#{fileName},#{fileMd5},#{fileStatus},now())
+    </insert>
+</mapper>
