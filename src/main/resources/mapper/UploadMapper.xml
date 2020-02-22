@@ -6,7 +6,16 @@
         FROM uploadfile.upload_file
         WHERE upload_file.file_md5=#{fileMd5}
     </select>
-    <insert id="saveFile" parameterType="com.supereal.bigfile.dataobject.UploadFile">
+    <insert id="saveFileBegin" parameterType="com.supereal.bigfile.dataobject.UploadFile">
+        INSERT INTO uploadfile.upload_file(file_id, file_path, file_size, file_suffix, file_name, file_md5, file_status,create_time)
+        VALUES (#{fileId},#{filePath},#{fileSize},#{fileSuffix},#{fileName},#{fileMd5},#{fileStatus},now())
+    </insert>
+    <update id="saveFileEnd" parameterType="com.supereal.bigfile.dataobject.UploadFile">
+        UPDATE uploadfile.upload_file
+        SET upload_file.file_status=#{fileStatus}
+      WHERE upload_file.file_id=#{fileId}
+    </update>
+    <insert id="saveFileSmall" parameterType="com.supereal.bigfile.dataobject.UploadFile">
         INSERT INTO uploadfile.upload_file(file_id, file_path, file_size, file_suffix, file_name, file_md5, file_status,create_time)
         VALUES (#{fileId},#{filePath},#{fileSize},#{fileSuffix},#{fileName},#{fileMd5},#{fileStatus},now())
     </insert>

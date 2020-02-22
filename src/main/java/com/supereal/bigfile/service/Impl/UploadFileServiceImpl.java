@@ -44,7 +44,7 @@ public class UploadFileServiceImpl implements UploadFileService {
         }
         //文件分片位置
         File file = new File(saveDirectory, fileId + "_" + index);
-
+        System.out.println(file.getName());
         //根据action不同执行不同操作. check:校验分片是否上传过; upload:直接上传分片
         Map<String, Object> map = null;
 
@@ -58,6 +58,7 @@ public class UploadFileServiceImpl implements UploadFileService {
                 map = new HashMap<>();
                 map.put("flag", "1");
                 map.put("fileId", fileId);
+                System.out.println("123");
                 if (index != total)
                     return map;
             } else {
@@ -120,6 +121,8 @@ public class UploadFileServiceImpl implements UploadFileService {
         String suffix = NameUtil.getExtensionName(fileName);
         String saveDirectory = Constant.PATH + File.separator + fileId;
         String filePath = saveDirectory + File.separator + fileId + "." + suffix;
+        System.out.println(index);
+        System.out.println(total);
         //验证路径是否存在，不存在则创建目录
         File path = new File(saveDirectory);
         if (!path.exists()) {
@@ -139,8 +142,6 @@ public class UploadFileServiceImpl implements UploadFileService {
             map = new HashMap<>();
             map.put("flag", "1");
             map.put("fileId", fileId);
-            if (index != total)
-                return map;
         }
 
         if (path.isDirectory()) {
@@ -148,7 +149,6 @@ public class UploadFileServiceImpl implements UploadFileService {
             if (fileArray != null) {
                 if (fileArray.length == total) {
                     //分块全部上传完毕,合并
-
                     File newFile = new File(saveDirectory, fileName);
                     FileOutputStream outputStream = new FileOutputStream(newFile, true);//文件追加写入
                     byte[] byt = new byte[10 * 1024 * 1024];
@@ -166,18 +166,24 @@ public class UploadFileServiceImpl implements UploadFileService {
                     outputStream.close();
                     //修改FileRes记录为上传成功
                     UploadFile uploadFile = new UploadFile();
-                    uploadFile.setFileId(fileId);
-                    uploadFile.setFileStatus(2);
-                    uploadFile.setFileName(fileName);
-                    uploadFile.setFileMd5(md5);
-                    uploadFile.setFileSuffix(suffix);
-                    uploadFile.setFilePath(filePath);
-                    uploadFile.setFileSize(size);
-                    uploadFileRepository.saveFile(uploadFile);
+                    if (index==1) {
+                        uploadFile.setFileId(fileId);
+                        uploadFile.setFileStatus(2);
+                        uploadFile.setFileName(fileName);
+                        uploadFile.setFileMd5(md5);
+                        uploadFile.setFileSuffix(suffix);
+                        uploadFile.setFilePath(filePath);
+                        uploadFile.setFileSize(size);
+                        uploadFileRepository.saveFileSmall(uploadFile);
+                    }else
+                    {
+                        uploadFile.setFileId(fileId);
+                        uploadFile.setFileStatus(2);
+                        uploadFileRepository.saveFileEnd(uploadFile);
+                    }
                     map = new HashMap<>();
                     map.put("fileId", fileId);
                     map.put("flag", "2");
-
                     return map;
                 } else if (index == 1) {
                     //文件第一个分片上传时记录到数据库
@@ -193,8 +199,7 @@ public class UploadFileServiceImpl implements UploadFileService {
                     uploadFile.setFilePath(filePath);
                     uploadFile.setFileSize(size);
                     uploadFile.setFileStatus(1);
-
-                    uploadFileRepository.saveFile(uploadFile);
+                    uploadFileRepository.saveFileBegin(uploadFile);
                 }
             }
         }

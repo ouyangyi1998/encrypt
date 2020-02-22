@@ -15,6 +15,9 @@ public interface UploadFileRepository {
 
     UploadFile findFileByFileMd5(String fileMd5);
 
-    void saveFile(UploadFile file);
+    void saveFileBegin(UploadFile file);
 
+    void saveFileEnd(UploadFile file);
+
+    void saveFileSmall(UploadFile file);
 }

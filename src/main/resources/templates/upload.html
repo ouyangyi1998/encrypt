@@ -13,7 +13,7 @@
         function buf2hex(buffer) { // buffer is an ArrayBuffer
             return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
         }
-
+        //加密aes算法
         function Encrypt(word,randomKey){
             var key = CryptoJS.enc.Utf8.parse(randomKey);
             var srcs = CryptoJS.enc.Utf8.parse(word);
@@ -22,12 +22,12 @@
                 padding : CryptoJS.pad.Pkcs7
             });
             var reg = new RegExp('/', "g");
-
             return encrypted.toString().replace(reg, "#");
         }
+        //随机生成字符串
         function randomString(len) {
              　　len = len || 32;
-             　　var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';    /****默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
+             　　var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
              　　var maxPos = $chars.length;
              　　var pwd = '';
              　　for (var w= 0; w < len; w++) {
@@ -35,10 +35,10 @@
                  　　}
             　　return pwd;
         }
+        // 对字符串进行编码
         function encode(str){
-// 对字符串进行编码
             var encode = encodeURI(str);
-// 对编码的字符串转化base64
+            // 对编码的字符串转化base64
             var base64 = btoa(encode);
             return base64;
         }
@@ -58,7 +58,7 @@
                 });
             }
         };
-        $(function () {
+        $(function () {//梦开始的地方
             page.init();
         });
         function isUpload (file) {
@@ -118,19 +118,14 @@
                 form.append("action", "check");  //检测分片是否上传
                 $("#param").append("<br/>" + "action==check " + "&nbsp;&nbsp;");
             } else {
-                var key=randomString(16);
-                console.log( key);
-                key=encode(key);
-                console.log(key);
+                var key=encode(randomString(16));
                 var temp=file.slice(start,end);
-
                 var reader = new FileReader();
+
                 reader.readAsArrayBuffer(temp);
-                //reader.readAsArrayBuffer(temp);
                 reader.onload = function(e) {
                     var buffer = e.target.result;//内容就在这里
-
-                    var hex = buf2hex(buffer)
+                    var hex = buf2hex(buffer);
                     var encrypt = Encrypt(hex, key);
 
                     form.append("fileEncrypt", encrypt);
@@ -146,6 +141,7 @@
             form.append("size", size);
             form.append("total", shardCount);  //总片数
             form.append("index", i+1);        //当前是第几片
+
             var index = i+1;
             $("#param").append("index==" + index);
             //按大小切割文件段　　
