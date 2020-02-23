@@ -85,6 +85,7 @@ public class UploadFileServiceImpl implements UploadFileService {
         } else {
             //上传过文件，判断文件现在还存在不存在
             File file = new File(Constant.PATH+"/"+uploadFile.getFileId()+"/"+uploadFile.getFileName());
+
             if (file.exists()) {
                 System.out.println(uploadFile.getFileStatus());
                 if (uploadFile.getFileStatus() == 1) {
@@ -99,6 +100,7 @@ public class UploadFileServiceImpl implements UploadFileService {
                     map.put("flag", 2);
                 }
             } else {
+                uploadFileRepository.deleteFile(uploadFile.getFileId());
                 map = new HashMap<>();
                 map.put("flag", 0);
                 map.put("fileId", uploadFile.getFileId());

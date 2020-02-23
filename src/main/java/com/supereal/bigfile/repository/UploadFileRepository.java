@@ -20,4 +20,6 @@ public interface UploadFileRepository {
     void saveFileEnd(UploadFile file);
 
     void saveFileSmall(UploadFile file);
+
+    void deleteFile(String fileId);
 }

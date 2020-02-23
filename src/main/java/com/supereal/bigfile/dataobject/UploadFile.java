@@ -47,8 +47,8 @@ public class UploadFile {
     public UploadFile() {
     }
 
-    public UploadFile(String fileName, Integer fileStatus) {
+    /*public UploadFile(String fileName, Integer fileStatus) {
         this.fileName = fileName;
         this.fileStatus = fileStatus;
-    }
+    }*/
 }

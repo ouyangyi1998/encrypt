@@ -19,4 +19,8 @@
         INSERT INTO uploadfile.upload_file(file_id, file_path, file_size, file_suffix, file_name, file_md5, file_status,create_time)
         VALUES (#{fileId},#{filePath},#{fileSize},#{fileSuffix},#{fileName},#{fileMd5},#{fileStatus},now())
     </insert>
+    <delete id="deleteFile" parameterType="string">
+        DELETE FROM uploadfile.upload_file
+        WHERE file_id=#{fileId}
+    </delete>
 </mapper>
