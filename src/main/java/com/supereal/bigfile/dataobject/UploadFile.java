@@ -37,18 +37,18 @@ public class UploadFile {
 
     private Date updateTime;
 
-    public UploadFile(String fileId, String fileName, String fileMd5, Integer fileStatus) {
+    /*public UploadFile(String fileId, String fileName, String fileMd5, Integer fileStatus) {
         this.fileId = fileId;
         this.fileName = fileName;
         this.fileMd5 = fileMd5;
         this.fileStatus = fileStatus;
-    }
+    }*/
 
     public UploadFile() {
     }
 
-    public UploadFile(String fileName, Integer fileStatus) {
+    /*public UploadFile(String fileName, Integer fileStatus) {
         this.fileName = fileName;
         this.fileStatus = fileStatus;
-    }
+    }*/
 }
