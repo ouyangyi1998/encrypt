@@ -7,5 +7,5 @@ package com.supereal.bigfile.common;
  */
 public class Constant {
 
-    public static final String PATH="C:/test";
+    public static final String PATH="file/real";
 }

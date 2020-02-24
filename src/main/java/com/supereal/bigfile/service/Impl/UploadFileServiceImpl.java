@@ -33,9 +33,9 @@ public class UploadFileServiceImpl implements UploadFileService {
     @Override
     public Map<String, Object> check(FileForm form) throws Exception {
         String fileId = form.getUuid();
-        Integer index = Integer.valueOf(form.getIndex());
+        int index = Integer.valueOf(form.getIndex());
         String partMd5 = form.getPartMd5();
-        Integer total = Integer.valueOf(form.getTotal());
+        int total = Integer.valueOf(form.getTotal());
         String saveDirectory = Constant.PATH + File.separator + fileId;
         //验证路径是否存在，不存在则创建目录
         File path = new File(saveDirectory);
@@ -44,7 +44,6 @@ public class UploadFileServiceImpl implements UploadFileService {
         }
         //文件分片位置
         File file = new File(saveDirectory, fileId + "_" + index);
-        System.out.println(file.getName());
         //根据action不同执行不同操作. check:校验分片是否上传过; upload:直接上传分片
         Map<String, Object> map = null;
 
@@ -58,7 +57,6 @@ public class UploadFileServiceImpl implements UploadFileService {
                 map = new HashMap<>();
                 map.put("flag", "1");
                 map.put("fileId", fileId);
-                System.out.println("123");
                 if (index != total)
                     return map;
             } else {
@@ -73,8 +71,10 @@ public class UploadFileServiceImpl implements UploadFileService {
 
     @Override
     public Map<String, Object> findByFileMd5(String md5) {
+        System.out.println(md5);
         UploadFile uploadFile = uploadFileRepository.findFileByFileMd5(md5);
         System.out.println(uploadFile==null);
+        System.out.println(uploadFile);
         Map<String, Object> map = null;
         if (uploadFile == null) {
             //没有上传过文件
@@ -84,18 +84,21 @@ public class UploadFileServiceImpl implements UploadFileService {
             map.put("date", simpleDateFormat.format(new Date()));
         } else {
             //上传过文件，判断文件现在还存在不存在
-            File file = new File(Constant.PATH+"/"+uploadFile.getFileId()+"/"+uploadFile.getFileName());
-
+            File file = new File(Constant.PATH+"/"+uploadFile.getFileId()+"/"+uploadFile.getFileName()+"."+uploadFile.getFileSuffix());
+            System.out.println(Constant.PATH+"/"+uploadFile.getFileId()+"/"+uploadFile.getFileName()+"."+uploadFile.getFileSuffix());
+            System.out.println(file.exists());
             if (file.exists()) {
-                System.out.println(uploadFile.getFileStatus());
+                System.out.println("2");
                 if (uploadFile.getFileStatus() == 1) {
                     //文件只上传了一部分
+                    System.out.println("3");
                     map = new HashMap<>();
                     map.put("flag", 1);
                     map.put("fileId", uploadFile.getFileId());
                     map.put("date", simpleDateFormat.format(new Date()));
                 } else if (uploadFile.getFileStatus() == 2) {
                     //文件早已上传完整
+                    System.out.println("4");
                     map = new HashMap<>();
                     map.put("flag", 2);
                 }
@@ -123,8 +126,6 @@ public class UploadFileServiceImpl implements UploadFileService {
         String suffix = NameUtil.getExtensionName(fileName);
         String saveDirectory = Constant.PATH + File.separator + fileId;
         String filePath = saveDirectory + File.separator + fileId + "." + suffix;
-        System.out.println(index);
-        System.out.println(total);
         //验证路径是否存在，不存在则创建目录
         File path = new File(saveDirectory);
         if (!path.exists()) {
