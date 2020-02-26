@@ -67,8 +67,9 @@
                     if (file==null)
                     {
                         swal({
-                            text: "No File",
-                            type: "info",
+                            title: "No File",
+                            text:"please select a file",
+                            type: "warning",
                             confirm:'ok',
                             confirmButtonColor: '#5a84fd',
                         });
@@ -130,7 +131,9 @@
         function realUpload(file, uuid, md5, date) {
           var name = file.name;
           var  size = file.size;
+          console.log(typeof size);
             var shardCount = Math.ceil(size / shardSize);  //总片数
+            console.log(typeof shardCount);
          NProgress.start();
             if (i > shardCount) {
                 return;
@@ -236,15 +239,6 @@
 </head>
 
 <body>
-
-<!--<input type="file" id="file" />-->
-<!--<button id="upload">上传</button>-->
-<!--<br/><br/>
-<span style="font-size:16px">上传进度：</span><span id="output" style="font-size:16px"></span>
-<span id="useTime" style="font-size:16px;margin-left:20px;">上传时间：</span>
-<span id="uuid" style="font-size:16px;margin-left:20px;">文件ID：</span>
-<br/><br/>
-<span id="param" style="font-size:16px">上传过程：</span>-->
 <div class="container" align="center">
 <div class="form-group">
     <div class="col-sm-4 control-label">选择文件</div>
