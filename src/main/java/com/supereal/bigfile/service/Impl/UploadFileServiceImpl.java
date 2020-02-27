@@ -71,10 +71,7 @@ public class UploadFileServiceImpl implements UploadFileService {
 
     @Override
     public Map<String, Object> findByFileMd5(String md5) {
-        System.out.println(md5);
         UploadFile uploadFile = uploadFileRepository.findFileByFileMd5(md5);
-        System.out.println(uploadFile==null);
-        System.out.println(uploadFile);
         Map<String, Object> map = null;
         if (uploadFile == null) {
             //没有上传过文件
@@ -85,20 +82,17 @@ public class UploadFileServiceImpl implements UploadFileService {
         } else {
             //上传过文件，判断文件现在还存在不存在
             File file = new File(Constant.PATH+"/"+uploadFile.getFileId()+"/"+uploadFile.getFileName()+"."+uploadFile.getFileSuffix());
-            System.out.println(Constant.PATH+"/"+uploadFile.getFileId()+"/"+uploadFile.getFileName()+"."+uploadFile.getFileSuffix());
-            System.out.println(file.exists());
             if (file.exists()) {
-                System.out.println("2");
                 if (uploadFile.getFileStatus() == 1) {
                     //文件只上传了一部分
-                    System.out.println("3");
+
                     map = new HashMap<>();
                     map.put("flag", 1);
                     map.put("fileId", uploadFile.getFileId());
                     map.put("date", simpleDateFormat.format(new Date()));
                 } else if (uploadFile.getFileStatus() == 2) {
                     //文件早已上传完整
-                    System.out.println("4");
+
                     map = new HashMap<>();
                     map.put("flag", 2);
                 }

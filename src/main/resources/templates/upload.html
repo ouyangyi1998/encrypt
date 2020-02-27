@@ -17,6 +17,7 @@
     <script th:src="@{/js/Base64.js}"></script>
     <script th:src="@{/js/sweetalert2.js}"></script>
     <script th:src="@{/js/NProgress.js}"></script>
+    <script th:src="@{/js/jsencrypt.js}"></script>
     <script type="text/javascript">
 
         function buf2hex(buffer) { // buffer is an ArrayBuffer
@@ -100,12 +101,13 @@
                     contentType: false,  //很重要，指定为false才能形成正确的Content-Type
                     success: function(data){
                         var uuid = data.fileId;
+                        var rsaKey=data.RsaPublicKey;
                         if (data.flag == "0") {
                             //没有上传过文件
-                            realUpload(file,uuid,md5,data.date);
+                            realUpload(file,uuid,md5,data.date,rsaKey);
                         } else if(data.flag == "1") {
                             //已经上传部分
-                            realUpload(file,uuid,md5,data.date);
+                            realUpload(file,uuid,md5,data.date,rsaKey);
                         } else if(data.flag == "2") {
                             //文件已经上传过
                            /* alert("文件已经上传过,秒传了！！");*/
@@ -128,13 +130,12 @@
             })
         };
         
-        function realUpload(file, uuid, md5, date) {
+        function realUpload(file, uuid, md5, date,rsaKey) {
           var name = file.name;
           var  size = file.size;
           console.log(typeof size);
             var shardCount = Math.ceil(size / shardSize);  //总片数
-            console.log(typeof shardCount);
-         NProgress.start();
+            NProgress.start();
             if (i > shardCount) {
                 return;
             } else {
@@ -151,6 +152,13 @@
                 form.append("action", "check");  //检测分片是否上传
             } else {
                 var key=encode(randomString(16));
+                console.log(key);
+                var RSAencrypt=new JSEncrypt();
+                RSAencrypt.setPublicKey(rsaKey);
+                var RSAencrypted=RSAencrypt.encrypt(key);
+                console.log(RSAencrypted);
+
+
                 var temp=file.slice(start,end);
                 var reader = new FileReader();
 
@@ -161,7 +169,7 @@
                     var encrypt = Encrypt(hex, key);
 
                     form.append("fileEncrypt", encrypt);
-                    form.append("key", key);
+                    form.append("key", RSAencrypted);
                     form.append("action", "upload");  //直接上传分片
                 };
             }
@@ -204,7 +212,7 @@
                                 ++succeed;
                                 NProgress.set(succeed/shardCount);
                             }
-                            realUpload(file, uuid, md5, date);
+                            realUpload(file, uuid, md5, date,rsaKey);
                         } else {
                             ++succeed;
                             NProgress.set(succeed/shardCount);
